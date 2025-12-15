@@ -13,6 +13,10 @@ public class PasswordValidator {
         if (length < 8) {
             return false;
         }
+        if (length > 20) {
+            System.out.println(length);
+            return false;
+        }
 
         boolean hasUppercase = false;
         boolean hasLowercase = false;
