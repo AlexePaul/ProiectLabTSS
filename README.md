@@ -145,10 +145,11 @@ Rapoartele de acoperire au fost generate în format HTML și pot fi găsite în 
 
 #### b) Concluzii
 
-Pentru aceasta aplicatie, fiind una relativ simpla, toate cele trei tehnici de testare au oferit o acoperire ridicata a codului sursa.
+Pentru aceasta aplicatie, fiind una relativ simpla, toate cele trei tehnici de testare au oferit o acoperire a instructiunilor ridicata.
 
 Consider ca motivul pentru aceasta acoperire ridicata este faptul ca singurul mod prin care aplicatia va returna valoarea `true`, acceptand astfel o parola ca fiind valida, este daca trece prin toate liniile din codul sursa fara a returna mai devreme cu `false`.
 
 In concluzie, in momentul in care un test are ca `input` o parola valida, va face astfel acoperirea sa fie ridicata. Fiecare set de teste contine si o parola valida, astfel ajungem in situatia in care fiecare metoda de testare are coverage aproape 100% (in cazul acestei aplicatii, motivul de ce totusi nu ajunge niciuna din cele 3 la 100% este faptul ca nu este testat constructorul clasei, metoda fiind statica).
 
-Putem in schimb sa observam ca desi toate cele 3 metode de testare au obtinut valori mari pentru acoperire, in cazul `BVA` aceste valori sunt putin mai mici. Acest fapt se datoreaza lipsei testarii cazului cu `password=null`, deoarece am testat doar lungimi 7, 8, 9, 19, 20, 21.
+Putem in schimb sa observam ca desi toate cele 3 metode de testare au obtinut valori mari pentru acoperirea liniilor, in cazul `BVA` aceste valori sunt putin mai mici. Acest fapt se datoreaza lipsei testarii cazului cu `password=null`, deoarece am testat doar lungimi 7, 8, 9, 19, 20, 21.
+Totodata, acoperirea pentru `Branches` si `Complexity` este mai mica in cazul `BVA`, din motivul ca nu sunt testate parole care sunt invalide din cauza compozitiei, ci doar din cauza lungimii.
