@@ -14,7 +14,6 @@ public class PasswordValidator {
             return false;
         }
         if (length > 20) {
-            System.out.println(length);
             return false;
         }
 
