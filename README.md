@@ -153,3 +153,127 @@ In concluzie, in momentul in care un test are ca `input` o parola valida, va fac
 
 Putem in schimb sa observam ca desi toate cele 3 metode de testare au obtinut valori mari pentru acoperirea liniilor, in cazul `BVA` aceste valori sunt putin mai mici. Acest fapt se datoreaza lipsei testarii cazului cu `password=null`, deoarece am testat doar lungimi 7, 8, 9, 19, 20, 21.
 Totodata, acoperirea pentru `Branches` si `Complexity` este mai mica in cazul `BVA`, din motivul ca nu sunt testate parole care sunt invalide din cauza compozitiei, ci doar din cauza lungimii.
+
+### Cerinta 3: Transformarea in Graf Orientat si gasirea unui set de teste care satisface criteriul MC/DC.
+
+#### a) Transformarea programului intr-un graf orientat
+
+In figura de mai jos este reprezentat graful orientat asociat metodei de validare a parolei. In cadrul acestui graf, nodurile ovale reprezinta punctele de Inceput si de terminare ale execuției, iar nodurile de tip romb reprezinta structurile decizionale (`if`) din program.
+
+![Graf Orientat](./Assets/PasswordValidator.png)
+
+#### b) Ce este criteriul MC/DC?
+
+Criteriul MC/DC (Modified Condition/Decision Coverage) este o tehnica de testare care asigura ca fiecare conditie dintr-o decizie afecteaza rezultatul deciziei in mod independent. Pentru a satisface acest criteriu, trebuie sa se demonstreze ca schimbarea unei conditii atomice din `true` in `false` (sau invers) schimba rezultatul deciziei, in timp ce toate celelalte conditii raman constante.
+
+In cazul acestui program, singura conditie compusa este cea care verifica daca parola contine toate tipurile necesare de caractere (litere mari, litere mici, cifre, caractere speciale). Celelalte conditii sunt deja atomice.
+
+#### c) Identificarea deciziilor si conditiilor atomice
+
+| Decizie | Conditii                                                                       | Tip decizie |
+|---------|--------------------------------------------------------------------------------|-------------|
+| D1      | C1: password == null                                                           | simpla      |
+| D2      | C2: length < 8                                                                 | simpla      |
+| D3      | C3: length > 20                                                                | simpla      |
+| D4      | C4: hasUppercase AND C5: hasLowercase <br/>AND C6: hasDigit AND C7: hasSpecial | compusa     |
+
+#### d) Set de teste care satisface criteriul MC/DC
+
+| Test | C4 (Upper) | C5 (Lower) | C6 (Digit) | C7 (Special) | Decizia D4 | Parolă exemplu |
+|------|------------|------------|------------|--------------|------------|----------------|
+| M1   | T          | T          | T          | T            | T          | Ab1!abcda      |
+| M2   | F          | T          | T          | T            | F          | ab1!abcda      |
+| M3   | T          | F          | T          | T            | F          | AB1!ABCDA      |
+| M4   | T          | T          | F          | T            | F          | Abc!abcda      |
+| M5   | T          | T          | T          | F            | F          | Ab1abcdEa      |
+
+
+Pentru a satisface criteriul MC/DC pentru decizia D4, am creat cinci teste (M1-M5) care acopera toate conditiile atomice. Fiecare test schimba o singura conditie atomica, in timp ce celelalte raman constante, astfel demonstrand ca fiecare conditie afecteaza rezultatul deciziei in mod independent. Pentru a aplica criteriul MC/DC complet, presupunem criteriile pentru celelalte decizii (C1, C2, C3) ca avand valoarea de adevar `false`, astfel incat sa nu influenteze rezultatul final al validarii parolei.
+
+##### Demonstratia Independentei Conditiilor
+
+- Test M1: Toate conditiile sunt `true`, decizia D4 este `true`.
+- Test M2: C4 este `false`, celelalte conditii sunt `true`, decizia D4 este `false`.
+- Test M3: C5 este `false`, celelalte conditii sunt `true`, decizia D4 este `false`.
+- Test M4: C6 este `false`, celelalte conditii sunt `true`, decizia D4 este `false`.
+- Test M5: C7 este `false`, celelalte conditii sunt `true`, decizia D4 este `false`.
+
+#### e) Implementarea testelor MC/DC
+
+Fiecare caz de test din tabelul de mai sus va fi implementat în clasa [PasswordValidatorMCDCTest](./PasswordValidator/src/test/java/validator/PasswordValidatorMCDCTest.java) folosind JUnit.
+
+
+### Cerinta 4: Identificarea unui mutant de ordinul 1 echivalent al programului
+
+Un mutant de ordinul 1 echivalent este o versiune a programului original care a suferit o modificare. In ciuda modificării, produce aceleași rezultate pentru toate cazurile de testare existente. Acest lucru înseamnă că mutantul nu poate fi "ucis" de niciun test existent, deoarece comportamentul său rămâne identic cu cel al programului original.
+
+#### a) Mutant Echivalent Identificat
+
+```java
+// Original
+if ("!@#$%^&*".indexOf(c) >= 0) {
+    hasSpecial = true;
+}
+
+// Mutant Echivalent
+if ("!@#$%^&*".contains(String.valueOf(c))) {
+    hasSpecial = true;
+}
+```
+#### b) Explicația Mutantului Echivalent
+În acest mutant, am înlocuit metoda `indexOf` cu metoda `contains` pentru a verifica dacă un caracter este prezent în șirul de caractere speciale. Ambele metode verifică prezența unui caracter într-un șir, dar folosesc abordări diferite de implementare.
+
+##### De ce este echivalent acest mutant?
+Comportamentul ambelor metode este identic în contextul nostru, deoarece ambele vor returna `true` dacă caracterul este găsit în șirul de caractere speciale și `false` în caz contrar. Astfel, pentru toate cazurile de testare existente, acest mutant va produce aceleași rezultate ca și programul original.
+
+##### Tip mutatie:
+
+Mutantul ales, prin înlocuirea metodei `indexOf` cu `contains`, este un exemplu de *SVR* (Statement/Variable Replacement), deoarece schimbă o instrucțiune fără a modifica comportamentul programului.
+
+#### c) Implementarea Mutantului Echivalent
+Implementarea acestui mutant echivalent poate fi consultată în fișierul [PasswordValidatorEquivalentMutant.java](./PasswordValidator/src/main/java/org/example/validator/PasswordValidatorEquivalentMutant.java).
+
+### Cerinta 5: Identificarea mutantilor ne-echivalenti
+
+Un mutant ne-echivalent este o versiune modificată a programului original care produce rezultate diferite pentru cel puțin un caz de testare existent. Acești mutanți pot fi "ucisi" de testele existente, deoarece comportamentul lor diferă de cel al programului original.
+
+Pentru a identifica mutantii ne-echivalenti, am ales testul EP8. Test ce are ca input: `"Ab1!abcd"` si se asteapta ca output-ul sa fie `true`.
+
+#### a) Identificarea mutantului ne-echivalent care sa fie omorat de testul EP8
+
+##### Mutantul identificat
+```java
+// Original
+return hasUppercase && hasLowercase && hasDigit && hasSpecial;
+// Mutant Ne-echivalent
+return hasUppercase && hasLowercase && hasDigit && !hasSpecial;
+```
+
+##### Explicația mutantului ne-echivalent
+In cazul acestui mutant ne-echivalent, am modificat condiția care verifică prezența caracterelor speciale, schimbând `hasSpecial` în `!hasSpecial`. Aceasta înseamnă că pentru ca parola să fie considerată validă, nu trebuie să conțină caractere speciale. Testul ep8, care verifică o parolă ce conține un caracter special, va eșua pentru acest mutant, deoarece așteaptă ca parola să fie validă (`true`), dar mutantul va returna `false`. Astfel, acest mutant ne-echivalent este "ucis" de testul EP8.
+
+##### Tip mutatie:
+Mutantul ales, prin negarea condiției `hasSpecial`, este un exemplu de *LOR* (Logical Operator Replacement), deoarece schimbă parametrul unei conditii logice in cadrul unei decizii.
+
+##### Implementarea Mutantului Ne-echivalent
+Implementarea acestui mutant ne-echivalent poate fi consultată în fișierul [PasswordValidatorKilled.kava](./PasswordValidator/src/main/java/org/example/validator/PasswordValidatorKilled.java).
+
+#### b) Identificarea mutantului ne-echivalent care sa nu fie omorat de testul EP8
+
+```java
+// Original
+return hasUppercase && hasLowercase && hasDigit && hasSpecial;
+// Mutant Ne-echivalent
+return hasUppercase && hasLowercase && hasDigit;
+```
+
+##### Explicația mutantului ne-echivalent
+
+In cazul acestui mutant ne-echivalent, am eliminat condiția care verifică prezența caracterelor speciale din decizia finală. Astfel, pentru ca parola să fie considerată validă, nu mai este necesar să conțină un caracter special. Testul EP8, care verifică o parolă ce conține un caracter special, va trece pentru acest mutant, deoarece așteaptă ca parola să fie validă (`true`), iar mutantul va returna `true` datorită faptului că celelalte condiții sunt îndeplinite. Astfel, acest mutant ne-echivalent nu este "ucis" de testul EP8.
+
+##### Tip mutatie:
+Mutantul ales, prin eliminarea condiției `hasSpecial`, este un exemplu de *LCR* (Logical Condition Removal), deoarece elimină o parte a deciziei.
+
+##### Implementarea Mutantului Ne-echivalent
+
+Implementarea acestui mutant ne-echivalent poate fi consultată în fișierul [PasswordValidatorNotKilled.java](./PasswordValidator/src/main/java/org/example/validator/PasswordValidatorNotKilled.java).

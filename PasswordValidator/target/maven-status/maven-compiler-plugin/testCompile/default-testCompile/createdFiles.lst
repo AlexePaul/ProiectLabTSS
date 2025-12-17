@@ -1,3 +1,4 @@
-validator/PasswordValidatorBVATest.class
+validator/PasswordValidatorMCDCTest.class
 validator/PasswordValidatorCEGTest.class
+validator/PasswordValidatorBVATest.class
 validator/PasswordValidatorEPTest.class
